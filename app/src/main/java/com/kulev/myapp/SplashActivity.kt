@@ -19,20 +19,24 @@ class SplashActivity : AppCompatActivity() {
         val session = SessionManager(this)
 
         // Задержка, чтобы показать ProgressBar
+
         Handler(Looper.getMainLooper()).postDelayed({
 
             when {
                 // Если есть данные и включён автологин
+
                 session.hasUser() && session.isAutoLogin() -> {
                     startActivity(Intent(this, ContentActivity::class.java))
                 }
 
                 // Если данные есть, но автологин выключен
+
                 session.hasUser() -> {
                     startActivity(Intent(this, LoginActivity::class.java))
                 }
 
                 // Если данных нет — регистрация
+
                 else -> {
                     startActivity(Intent(this, RegisterActivity::class.java))
                 }
