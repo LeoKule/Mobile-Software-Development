@@ -15,6 +15,7 @@ class SplashActivity : AppCompatActivity() {
         setContentView(R.layout.activity_splash)
 
         // Создаём менеджер сессии
+
         val session = SessionManager(this)
 
         // Задержка, чтобы показать ProgressBar
