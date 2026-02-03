@@ -40,7 +40,7 @@ class RegisterActivity : AppCompatActivity() {
             val repeatPassword = etRepeatPassword.text.toString()
 
             // Проверка email
-            if (isEmailMode && !login.contains("@")) {
+            if (isEmailMode && !Regex("^.+@.+$").matches(login)) {
                 Toast.makeText(
                     this,
                     "Email должен содержать символ @",
@@ -50,10 +50,10 @@ class RegisterActivity : AppCompatActivity() {
             }
 
             // Проверка телефона
-            if (!isEmailMode && !login.contains("+")) {
+            if (!isEmailMode && !Regex("^\\+\\d{11}$").matches(login)) {
                 Toast.makeText(
                     this,
-                    "Номер телефона должен содержать символ +",
+                    "Номер телефона должен начинаться с + и содержать 11 цифр",
                     Toast.LENGTH_SHORT
                 ).show()
                 return@setOnClickListener
