@@ -2,4 +2,8 @@
     <string name="app_name">My Application</string>
     <string name="contentactivity">ContentActivity</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="name">Name</string>
+    <string name="price">Price</string>
+    <string name="date">Date</string>
+    <string name="score">Score</string>
 </resources>
