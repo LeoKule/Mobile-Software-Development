@@ -15,19 +15,6 @@
 
         <activity
             android:name=".ContentActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".RegisterActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".LoginActivity"
-            android:exported="false" />
-
-        <!-- SplashActivity — единственная точка входа в приложение. -->
-        <activity
-            android:name=".SplashActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -36,6 +23,4 @@
         </activity>
 
     </application>
-
-
 </manifest>

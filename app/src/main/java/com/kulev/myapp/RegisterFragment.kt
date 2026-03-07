@@ -1,99 +1,89 @@
 package com.kulev.myapp
 
-import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.text.InputType
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 
-class RegisterActivity : AppCompatActivity() {
-    // Флаг текущего режима регистрации
+class RegisterFragment : Fragment() {
     private var isEmailMode = true
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.register)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View = inflater.inflate(R.layout.fragment_register, container, false)
 
-        // Привязка элементов интерфейса
-        val tvByPhone = findViewById<TextView>(R.id.tvByPhone)
-        val tvByEmail = findViewById<TextView>(R.id.tvByEmail)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
-        // Получаем элементы интерфейса
-        val etLogin = findViewById<EditText>(R.id.etLogin)
-        val etPassword = findViewById<EditText>(R.id.etPassword)
-        val etRepeatPassword = findViewById<EditText>(R.id.etRepeatPassword)
-        val btnRegister = findViewById<Button>(R.id.btnRegister)
+        val tvByPhone = view.findViewById<TextView>(R.id.tvByPhone)
+        val tvByEmail = view.findViewById<TextView>(R.id.tvByEmail)
 
-        // Цвета
+        val etLogin = view.findViewById<EditText>(R.id.etLogin)
+        val etPassword = view.findViewById<EditText>(R.id.etPassword)
+        val etRepeatPassword = view.findViewById<EditText>(R.id.etRepeatPassword)
+        val btnRegister = view.findViewById<Button>(R.id.btnRegister)
+
         val activeColor = Color.parseColor("#7B3FE4")
         val inactiveColor = Color.parseColor("#9E9E9E")
 
-        // При нажатии кнопки регистрации выполняем проверки:
         btnRegister.setOnClickListener {
-
             val login = etLogin.text.toString()
             val password = etPassword.text.toString()
             val repeatPassword = etRepeatPassword.text.toString()
 
-            // Проверка email
             if (isEmailMode && !Regex("^.+@.+$").matches(login)) {
                 Toast.makeText(
-                    this,
+                    requireContext(),
                     "Email должен содержать символ @",
                     Toast.LENGTH_SHORT
                 ).show()
                 return@setOnClickListener
             }
 
-            // Проверка телефона
             if (!isEmailMode && !Regex("^\\+\\d{11}$").matches(login)) {
                 Toast.makeText(
-                    this,
+                    requireContext(),
                     "Номер телефона должен начинаться с + и содержать 11 цифр",
                     Toast.LENGTH_SHORT
                 ).show()
                 return@setOnClickListener
             }
 
-            // Проверка длины пароля
             if (password.length < 8) {
                 Toast.makeText(
-                    this,
+                    requireContext(),
                     "Пароль должен содержать минимум 8 символов",
                     Toast.LENGTH_SHORT
                 ).show()
                 return@setOnClickListener
             }
 
-            // Проверка совпадения паролей
             if (password != repeatPassword) {
                 Toast.makeText(
-                    this,
+                    requireContext(),
                     "Пароль и подтверждение не совпадают",
                     Toast.LENGTH_SHORT
                 ).show()
                 return@setOnClickListener
             }
 
-            // Если все проверки пройдены — сохраняем данные
-            val session = SessionManager(this)
+            val session = SessionManager(requireContext())
             session.saveUser(login, password, false)
-
-            // Переходим на ContentActivity
-            startActivity(Intent(this, ContentActivity::class.java))
-            finish()
-
+            findNavController().navigate(R.id.action_registerFragment_to_firstFragment)
         }
 
-
-        // Режим По email по умолчанию
         setEmailMode(tvByEmail, tvByPhone, etLogin, activeColor, inactiveColor)
 
-        // переключение режимов
         tvByEmail.setOnClickListener {
             setEmailMode(tvByEmail, tvByPhone, etLogin, activeColor, inactiveColor)
         }
@@ -102,8 +92,6 @@ class RegisterActivity : AppCompatActivity() {
             setPhoneMode(tvByPhone, tvByEmail, etLogin, activeColor, inactiveColor)
         }
     }
-
-
 
     private fun setEmailMode(
         active: TextView,

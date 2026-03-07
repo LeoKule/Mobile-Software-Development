@@ -1,6 +1,7 @@
 package com.kulev.myapp
 
 import android.os.Bundle
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
@@ -15,13 +16,18 @@ class ContentActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_content)
 
-        // NavController из nav_host_fragment
         navController = findNavController(R.id.nav_host_fragment)
 
-        // BottomNavigationView
-        val bottomNav =
-            findViewById<BottomNavigationView>(R.id.bottom_nav)
-
+        val bottomNav = findViewById<BottomNavigationView>(R.id.bottom_nav)
         bottomNav.setupWithNavController(navController)
+
+        navController.addOnDestinationChangedListener { _, destination, _ ->
+            bottomNav.visibility = when (destination.id) {
+                R.id.firstFragment,
+                R.id.secondFragment -> View.VISIBLE
+
+                else -> View.GONE
+            }
+        }
     }
 }
