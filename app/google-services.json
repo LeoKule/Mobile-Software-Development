@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "371808192745",
+    "project_id": "phonerating-ff052",
+    "storage_bucket": "phonerating-ff052.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:371808192745:android:6021ca3500a268e7ce8878",
+        "android_client_info": {
+          "package_name": "com.creyc.test"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBu9YFAdrNc6Jh9UxFUSV3lhTVyw1S2oOU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
