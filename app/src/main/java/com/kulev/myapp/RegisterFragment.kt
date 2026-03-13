@@ -12,9 +12,11 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import com.google.firebase.auth.FirebaseAuth
 
 class RegisterFragment : Fragment() {
     private var isEmailMode = true
+    private lateinit var auth: FirebaseAuth
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -24,6 +26,8 @@ class RegisterFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        auth = FirebaseAuth.getInstance()
 
         val tvByPhone = view.findViewById<TextView>(R.id.tvByPhone)
         val tvByEmail = view.findViewById<TextView>(R.id.tvByEmail)
@@ -37,23 +41,23 @@ class RegisterFragment : Fragment() {
         val inactiveColor = Color.parseColor("#9E9E9E")
 
         btnRegister.setOnClickListener {
-            val login = etLogin.text.toString()
+            val login = etLogin.text.toString().trim()
             val password = etPassword.text.toString()
             val repeatPassword = etRepeatPassword.text.toString()
 
-            if (isEmailMode && !Regex("^.+@.+$").matches(login)) {
+            if (!isEmailMode) {
                 Toast.makeText(
                     requireContext(),
-                    "Email должен содержать символ @",
+                    "Для Firebase используйте регистрацию по email",
                     Toast.LENGTH_SHORT
                 ).show()
                 return@setOnClickListener
             }
 
-            if (!isEmailMode && !Regex("^\\+\\d{11}$").matches(login)) {
+            if (!Regex("^.+@.+$").matches(login)) {
                 Toast.makeText(
                     requireContext(),
-                    "Номер телефона должен начинаться с + и содержать 11 цифр",
+                    "Email должен содержать символ @",
                     Toast.LENGTH_SHORT
                 ).show()
                 return@setOnClickListener
@@ -77,9 +81,19 @@ class RegisterFragment : Fragment() {
                 return@setOnClickListener
             }
 
-            val session = SessionManager(requireContext())
-            session.saveUser(login, password, false)
-            findNavController().navigate(R.id.action_registerFragment_to_firstFragment)
+            auth.createUserWithEmailAndPassword(login, password)
+                .addOnSuccessListener {
+                    val session = SessionManager(requireContext())
+                    session.saveUser(login, password, false)
+                    findNavController().navigate(R.id.action_registerFragment_to_firstFragment)
+                }
+                .addOnFailureListener {
+                    Toast.makeText(
+                        requireContext(),
+                        it.localizedMessage ?: "Ошибка регистрации",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
         }
 
         setEmailMode(tvByEmail, tvByPhone, etLogin, activeColor, inactiveColor)

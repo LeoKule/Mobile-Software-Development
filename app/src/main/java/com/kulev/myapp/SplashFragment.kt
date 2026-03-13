@@ -10,6 +10,7 @@ import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import com.google.firebase.auth.FirebaseAuth
 
 class SplashFragment : Fragment() {
 
@@ -26,10 +27,14 @@ class SplashFragment : Fragment() {
             delay(1500)
 
             val session = SessionManager(requireContext())
+            val auth = FirebaseAuth.getInstance()
 
             val destinationId = when {
-                session.hasUser() && session.isAutoLogin() -> R.id.firstFragment
-                session.hasUser() -> R.id.loginFragment
+                auth.currentUser != null && session.isAutoLogin() -> R.id.firstFragment
+                session.hasUser() -> {
+                    if (auth.currentUser != null) auth.signOut()
+                    R.id.loginFragment
+                }
                 else -> R.id.registerFragment
             }
 
