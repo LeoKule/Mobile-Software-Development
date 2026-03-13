@@ -1,16 +1,17 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
+    id 'com.google.gms.google-services'
 }
 
 android {
     namespace 'com.kulev.myapp'
-    compileSdk 32
+    compileSdk 34
 
     defaultConfig {
         applicationId "com.kulev.myapp"
         minSdk 21
-        targetSdk 32
+        targetSdk 34
         versionCode 1
         versionName "1.0"
 
@@ -48,7 +49,6 @@ dependencies {
     implementation("androidx.navigation:navigation-ui-ktx:2.5.3")
     implementation("androidx.navigation:navigation-ui:2.5.3")
 
-    implementation('com.google.firebase:firebase-bom:34.10.0')
-    implementation('com.google.firebase:farebase-analytics-ktx')
-    implementation('com.google.firebase:firebase-auth-ktx:23.2.1')
+    implementation ('com.google.firebase:firebase-auth-ktx:23.1.0')
+    implementation ('com.google.firebase:firebase-analytics-ktx:22.1.2')
 }
