@@ -3,25 +3,31 @@ package com.kulev.myapp
 import android.content.Context
 
 class SessionManager(context: Context) {
-
-    // Получаем SharedPreferences с именем user_prefs
     private val prefs =
-        context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
+        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
     // Сохраняем логин, пароль и флаг автологина
     fun saveUser(login: String, password: String, autoLogin: Boolean) {
         prefs.edit()
-            .putString("login", login)
-            .putString("password", password)
-            .putBoolean("auto_login", autoLogin)
+            .putString(KEY_LOGIN, login)
+            .putString(KEY_PASSWORD, password)
+            .putBoolean(KEY_AUTO_LOGIN, autoLogin)
             .apply()
     }
 
-    fun getLogin(): String? = prefs.getString("login", null)
-    fun getPassword(): String? = prefs.getString("password", null)
-    fun isAutoLogin(): Boolean = prefs.getBoolean("auto_login", false)
+    fun getLogin(): String? = prefs.getString(KEY_LOGIN, null)
+    fun getPassword(): String? = prefs.getString(KEY_PASSWORD, null)
+    fun isAutoLogin(): Boolean = prefs.getBoolean(KEY_AUTO_LOGIN, false)
 
     // Проверяем, есть ли сохранённый пользователь
     fun hasUser(): Boolean =
         getLogin() != null && getPassword() != null
+
+    companion object {
+        private const val PREFS_NAME = "user_prefs"
+        private const val KEY_LOGIN = "login"
+        private const val KEY_PASSWORD = "password"
+        private const val KEY_AUTO_LOGIN = "auto_login"
+    }
 }
+

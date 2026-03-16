@@ -7,13 +7,9 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.CheckBox
 import android.widget.EditText
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
-import com.google.firebase.auth.FirebaseAuthInvalidUserException
-
 
 class LoginFragment : Fragment() {
     private lateinit var auth: FirebaseAuth
@@ -36,32 +32,44 @@ class LoginFragment : Fragment() {
 
         val session = SessionManager(requireContext())
 
-        session.getLogin()?.let { etLogin.setText(it) }
+        session.getLogin()?.let(etLogin::setText)
 
         btnLogin.setOnClickListener {
-            val login = etLogin.text.toString().trim()
-            val password = etPassword.text.toString()
-
-            if (login.isEmpty() || password.isEmpty()) {
-                Toast.makeText(requireContext(), "Введите email и пароль", Toast.LENGTH_SHORT)
-                    .show()
-                return@setOnClickListener
-            }
-
-            auth.signInWithEmailAndPassword(login, password)
-                .addOnSuccessListener {
-                    session.saveUser(login, password, cbAuto.isChecked)
-                    findNavController().navigate(R.id.action_loginFragment_to_firstFragment)
-                }
-                .addOnFailureListener { error ->
-                    val message = when (error) {
-                        is FirebaseAuthInvalidUserException -> "Пользователь не найден"
-                        is FirebaseAuthInvalidCredentialsException -> "Неверный email или пароль"
-                        else -> error.localizedMessage ?: "Ошибка входа"
-                    }
-
-                    Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
-                }
+            handleLogin(
+                login = etLogin.text.toString().trim(),
+                password = etPassword.text.toString(),
+                autoLogin = cbAuto.isChecked,
+                session = session
+            )
         }
     }
+
+    private fun handleLogin(
+        login: String,
+        password: String,
+        autoLogin: Boolean,
+        session: SessionManager
+    ) {
+        validateInput(login, password)?.let {
+            showShortToast(it)
+            return
+        }
+
+        auth.signInWithEmailAndPassword(login, password)
+            .addOnSuccessListener {
+                session.saveUser(login, password, autoLogin)
+                findNavController().navigate(R.id.action_loginFragment_to_firstFragment)
+    }
+            .addOnFailureListener { error ->
+                showShortToast(FirebaseAuthErrorMapper.mapLoginError(error))
+            }
+    }
+
+    private fun validateInput(login: String, password: String): String? {
+        if (login.isEmpty() || password.isEmpty()) {
+            return "Введите email и пароль"
+        }
+        return null
+    }
+
 }

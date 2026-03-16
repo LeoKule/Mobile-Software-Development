@@ -9,13 +9,9 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseAuthUserCollisionException
-import com.google.firebase.auth.FirebaseAuthWeakPasswordException
-import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 
 class RegisterFragment : Fragment() {
     private var isEmailMode = true
@@ -44,107 +40,78 @@ class RegisterFragment : Fragment() {
         val inactiveColor = Color.parseColor("#9E9E9E")
 
         btnRegister.setOnClickListener {
-            val login = etLogin.text.toString().trim()
-            val password = etPassword.text.toString()
-            val repeatPassword = etRepeatPassword.text.toString()
+            handleRegistration(
+                login = etLogin.text.toString().trim(),
+                password = etPassword.text.toString(),
+                repeatPassword = etRepeatPassword.text.toString()
+            )
+        }
 
-            if (!isEmailMode) {
-                Toast.makeText(
-                    requireContext(),
-                    "Для Firebase используйте регистрацию по email",
-                    Toast.LENGTH_SHORT
-                ).show()
-                return@setOnClickListener
+        tvByEmail.setOnClickListener { setEmailMode(tvByEmail, tvByPhone, etLogin, activeColor, inactiveColor) }
+        tvByPhone.setOnClickListener { setPhoneMode(tvByPhone, tvByEmail, etLogin, activeColor, inactiveColor) }
+    }
+
+        private fun handleRegistration(login: String, password: String, repeatPassword: String) {
+            validateInput(login, password, repeatPassword)?.let {
+                showShortToast(it)
+                return
             }
 
-            if (!Regex("^.+@.+$").matches(login)) {
-                Toast.makeText(
-                    requireContext(),
-                    "Email должен содержать символ @",
-                    Toast.LENGTH_SHORT
-                ).show()
-                return@setOnClickListener
-            }
-
-            if (password.length < 8) {
-                Toast.makeText(
-                    requireContext(),
-                    "Пароль должен содержать минимум 8 символов",
-                    Toast.LENGTH_SHORT
-                ).show()
-                return@setOnClickListener
-            }
-
-            if (password != repeatPassword) {
-                Toast.makeText(
-                    requireContext(),
-                    "Пароль и подтверждение не совпадают",
-                    Toast.LENGTH_SHORT
-                ).show()
-                return@setOnClickListener
-            }
-
-            auth.createUserWithEmailAndPassword(login, password)
-                .addOnSuccessListener {
-                    val session = SessionManager(requireContext())
-                    session.saveUser(login, password, false)
-                    findNavController().navigate(R.id.action_registerFragment_to_firstFragment)
-                }
-                .addOnFailureListener { error ->
-                    val message = when (error) {
-                        is FirebaseAuthUserCollisionException -> "Пользователь с таким email уже существует"
-                        is FirebaseAuthWeakPasswordException -> "Слишком слабый пароль"
-                        is FirebaseAuthInvalidCredentialsException -> "Некорректный email"
-                        else -> error.localizedMessage ?: "Ошибка регистрации"
+                auth.createUserWithEmailAndPassword(login, password)
+                    .addOnSuccessListener {
+                        val session = SessionManager(requireContext())
+                        session.saveUser(login, password, false)
+                        findNavController().navigate(R.id.action_registerFragment_to_firstFragment)
                     }
+                    .addOnFailureListener { error ->
+                        showShortToast(FirebaseAuthErrorMapper.mapRegistrationError(error))
+                    }
+            }
 
-                    Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
-                }
+            private fun validateInput(login: String, password: String, repeatPassword: String): String? {
+                if (!isEmailMode) return "Для Firebase используйте регистрацию по email"
+                if (!EMAIL_REGEX.matches(login)) return "Email должен содержать символ @"
+                if (password.length < MIN_PASSWORD_LENGTH) return "Пароль должен содержать минимум 8 символов"
+                if (password != repeatPassword) return "Пароль и подтверждение не совпадают"
+                return null
+            }
+
+            private fun setEmailMode(
+                active: TextView,
+                inactive: TextView,
+                editText: EditText,
+                activeColor: Int,
+                inactiveColor: Int
+            ) {
+                isEmailMode = true
+
+                active.setTextColor(activeColor)
+                inactive.setTextColor(inactiveColor)
+
+                editText.hint = "Введите Email"
+                editText.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS
+                editText.text.clear()
+            }
+
+            private fun setPhoneMode(
+                active: TextView,
+                inactive: TextView,
+                editText: EditText,
+                activeColor: Int,
+                inactiveColor: Int
+            ) {
+                isEmailMode = false
+
+                active.setTextColor(activeColor)
+                inactive.setTextColor(inactiveColor)
+
+                editText.hint = "Введите номер телефона"
+                editText.inputType = InputType.TYPE_CLASS_PHONE
+                editText.text.clear()
+            }
+
+        companion object {
+            private val EMAIL_REGEX = Regex("^.+@.+$")
+            private const val MIN_PASSWORD_LENGTH = 8
         }
-
-        setEmailMode(tvByEmail, tvByPhone, etLogin, activeColor, inactiveColor)
-
-        tvByEmail.setOnClickListener {
-            setEmailMode(tvByEmail, tvByPhone, etLogin, activeColor, inactiveColor)
-        }
-
-        tvByPhone.setOnClickListener {
-            setPhoneMode(tvByPhone, tvByEmail, etLogin, activeColor, inactiveColor)
-        }
-    }
-
-    private fun setEmailMode(
-        active: TextView,
-        inactive: TextView,
-        editText: EditText,
-        activeColor: Int,
-        inactiveColor: Int
-    ) {
-        isEmailMode = true
-
-        active.setTextColor(activeColor)
-        inactive.setTextColor(inactiveColor)
-
-        editText.hint = "Введите Email"
-        editText.inputType =
-            InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS
-        editText.text.clear()
-    }
-
-    private fun setPhoneMode(
-        active: TextView,
-        inactive: TextView,
-        editText: EditText,
-        activeColor: Int,
-        inactiveColor: Int
-    ) {
-        isEmailMode = false
-
-        active.setTextColor(activeColor)
-        inactive.setTextColor(inactiveColor)
-
-        editText.hint = "Введите номер телефона"
-        editText.inputType = InputType.TYPE_CLASS_PHONE
-        editText.text.clear()
-    }
 }
