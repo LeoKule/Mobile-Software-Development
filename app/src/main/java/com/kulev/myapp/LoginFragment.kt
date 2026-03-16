@@ -11,6 +11,9 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
+import com.google.firebase.auth.FirebaseAuthInvalidUserException
+
 
 class LoginFragment : Fragment() {
     private lateinit var auth: FirebaseAuth
@@ -24,7 +27,7 @@ class LoginFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        auth = FirebaseAuth.getInstance()
+        auth = FirebaseAuthProvider.getAuth(requireContext())
 
         val etLogin = view.findViewById<EditText>(R.id.etLogin)
         val etPassword = view.findViewById<EditText>(R.id.etPassword)
@@ -50,12 +53,14 @@ class LoginFragment : Fragment() {
                     session.saveUser(login, password, cbAuto.isChecked)
                     findNavController().navigate(R.id.action_loginFragment_to_firstFragment)
                 }
-                .addOnFailureListener {
-                    Toast.makeText(
-                        requireContext(),
-                        it.localizedMessage ?: "Ошибка входа",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                .addOnFailureListener { error ->
+                    val message = when (error) {
+                        is FirebaseAuthInvalidUserException -> "Пользователь не найден"
+                        is FirebaseAuthInvalidCredentialsException -> "Неверный email или пароль"
+                        else -> error.localizedMessage ?: "Ошибка входа"
+                    }
+
+                    Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
                 }
         }
     }

@@ -13,6 +13,9 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthUserCollisionException
+import com.google.firebase.auth.FirebaseAuthWeakPasswordException
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 
 class RegisterFragment : Fragment() {
     private var isEmailMode = true
@@ -27,7 +30,7 @@ class RegisterFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        auth = FirebaseAuth.getInstance()
+        auth = FirebaseAuthProvider.getAuth(requireContext())
 
         val tvByPhone = view.findViewById<TextView>(R.id.tvByPhone)
         val tvByEmail = view.findViewById<TextView>(R.id.tvByEmail)
@@ -87,12 +90,15 @@ class RegisterFragment : Fragment() {
                     session.saveUser(login, password, false)
                     findNavController().navigate(R.id.action_registerFragment_to_firstFragment)
                 }
-                .addOnFailureListener {
-                    Toast.makeText(
-                        requireContext(),
-                        it.localizedMessage ?: "Ошибка регистрации",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                .addOnFailureListener { error ->
+                    val message = when (error) {
+                        is FirebaseAuthUserCollisionException -> "Пользователь с таким email уже существует"
+                        is FirebaseAuthWeakPasswordException -> "Слишком слабый пароль"
+                        is FirebaseAuthInvalidCredentialsException -> "Некорректный email"
+                        else -> error.localizedMessage ?: "Ошибка регистрации"
+                    }
+
+                    Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
                 }
         }
 
